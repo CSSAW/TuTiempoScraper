@@ -1,7 +1,7 @@
 '''
 Web scraper that collects weather data from tutiempo.net for the Limpopo region in South Africa
 Author: Andrew Ruder
-Last updated: 6/23/2020
+Last updated: 6/24/2020
 '''
 from urllib.request import urlopen
 from bs4 import BeautifulSoup as soup
@@ -9,11 +9,44 @@ def monthlyWeatherData(month_soup,month, year, lat, lon, f):
 	'''
 	Reads weather data from a location for a particular month into a .csv
 	'''
+	dayDict = dayDictCreate(month_soup)
 	station = (month_soup.findAll("h2")[0].text).split()[1]
 	monthTable = month_soup.findAll("div",{"class":"mt5 minoverflow tablancpy"})[0].findAll("tr")
 	for day in range(1, len(monthTable) - 2):
 		dayArray = monthTable[day].findAll("td")
-		f.write(station + "," +str(lat) + "," + str(lon) + "," + str(year) + "," + month + "," + dayArray[0].text + "," + dayArray[1].text + "," +dayArray[2].text + "," +dayArray[3].text + "," +dayArray[4].text + "," +dayArray[5].text + "," +dayArray[6].text + "," + dayArray[8].text + "," +dayArray[9].text + "," +dayArray[10].text + "\n")
+		if int(dayArray[0].text) < 10:
+			'''
+			Quick fix for date formatting
+			'''
+			calendarDay = '0'+dayArray[0].text
+		else:
+			calendarDay = dayArray[0].text
+		if not monthTable[day].findAll("td")[1].span:
+			f.write(station + "," +str(lat) + "," + str(lon) + "," + str(year) + month + calendarDay + "," + dayArray[1].text + "," +dayArray[2].text + "," +dayArray[3].text + "," +dayArray[5].text + "," +dayArray[6].text + "," + dayArray[8].text + "," +dayArray[9].text + "\n")
+		else:
+			'''
+			For when the data is not in plain text on the page html
+			'''
+			dayEntries = []
+			for i in range(1, len(dayArray) - 4):
+				entry = dayArray[i].findAll("span")
+				partial = ""
+				for j in entry:
+					partial += dayDict[j["class"][0]]
+				dayEntries.append(partial)
+			f.write(station + "," +str(lat) + "," + str(lon) + "," + str(year)+ month + calendarDay + "," +  dayEntries[0] + "," +  dayEntries[1] + "," +  dayEntries[2] + "," +  dayEntries[4] + "," +  dayEntries[5] + "," +  dayEntries[7] + "," +  dayEntries[8] + "\n")
+		
+def dayDictCreate(month_soup):
+	'''
+	Creates a dictionary for the data values that are not in plain text on the page html
+	'''
+	temp = month_soup.findAll("style")[1].text.split()
+	dDict = {}
+	for i in range(6, len(temp)):
+		tempkey = temp[i][5] + temp[i][6] + temp[i][7] + temp[i][8]
+		tempentry = temp[i][26]
+		dDict[tempkey] = tempentry
+	return dDict
 
 def parseMonths(station_soup, year, lat, lon, f):
 	'''
@@ -65,10 +98,10 @@ def stationList(citylist, year, f):
 			
 
 if __name__ == '__main__':
-	filename = "tutiempodata.csv"
+	filename = "tutiempodatatest.csv"
 	f = open(filename, "w")
 
-	headers = "Station, Latitude, Longitude, Year, Month, Day, T, TMax, TMin, SLP, H, PP, V, VM, VG\n"
+	headers = "Station, Latitude, Longitude, Date, T, TMax, TMin, H, PP, V, VM\n"
 	f.write(headers)
 	for year in range(2000,2021):
 		'''
