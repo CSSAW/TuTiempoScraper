@@ -15,13 +15,15 @@ def diaAMes(weatherDict, f):
 	Hence the name in spanish, day to month.
 	'''
 	for station in  weatherDict.keys():
-		for date in weatherDict[station].keys():
+		tempDict = weatherDict[station]
+		for date in tempDict.keys():
 			totalDays = len(weatherDict[station][date])
 			f.write(station + "," + date + ",")
+			tempList = tempDict[date]
 			for j in range(2):
 				temp = 0
 				for i in range(totalDays):
-					temp += weatherDict[stationKey][date][i][j]
+					temp += tempList[i][j]
 				if j != 1:
 					f.write(str(temp / float(totalDays)) + ",")
 				else:
@@ -53,8 +55,8 @@ if __name__ == '__main__':
 		else: 
 			tempDict = {}
 			tempList = []
-			tempList.append(weatherList)
-			tempDict[dateKey] = tempList
 			weatherDict[stationKey] = tempDict
+			weatherDict[stationKey][dateKey] = tempList
+			weatherDict[stationKey][dateKey].append(weatherList)
 	f.write("Station, Latitude, Longitude, Date, avgT, avgPP, totalPP\n")
 	diaAMes(weatherDict, f)
