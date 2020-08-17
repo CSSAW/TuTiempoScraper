@@ -1,6 +1,6 @@
 '''
 Author: Andrew Ruder
-Last edited: 07/27/2020
+Last edited: 08/17/2020
 Takes weather data scraped from https://en.tutiempo.net/climate/south-africa.html
 and then gets the average temperature, average percipitation and total percipitation for each month
 and then compares it to the prior month.
@@ -58,5 +58,5 @@ if __name__ == '__main__':
 			weatherDict[stationKey] = tempDict
 			weatherDict[stationKey][dateKey] = tempList
 			weatherDict[stationKey][dateKey].append(weatherList)
-	f.write("Station, Latitude, Longitude, Date, avgT, avgPP, totalPP\n")
+	f.write("Station,Latitude,Longitude,Date,avgT,avgPP,totalPP\n")
 	diaAMes(weatherDict, f)
